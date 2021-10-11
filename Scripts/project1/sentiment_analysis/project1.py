@@ -34,6 +34,9 @@ def hinge_loss_single(feature_vector, label, theta, theta_0):
     given data point and parameters.
     """
     # Your code here
+    z = label*(np.matmul(theta, feature_vector) + theta_0)
+    hinge = np.max([0, 1-z])
+    return hinge
     raise NotImplementedError
 
 
@@ -56,6 +59,9 @@ def hinge_loss_full(feature_matrix, labels, theta, theta_0):
     loss across all of the points in the feature matrix.
     """
     # Your code here
+    out = np.array([hinge_loss_single(x, y, theta, theta_0) for x,y in zip(feature_matrix, labels)])
+    loss = out.mean()
+    return loss
     raise NotImplementedError
 
 
@@ -81,7 +87,10 @@ def perceptron_single_step_update(
     real valued number with the value of theta_0 after the current updated has
     completed.
     """
-    # Your code here
+    if label * (np.dot(current_theta, feature_vector) + current_theta_0) <= 0:
+        current_theta += label * feature_vector
+        current_theta_0 += label
+    return (current_theta, current_theta_0)
     raise NotImplementedError
 
 
@@ -111,10 +120,14 @@ def perceptron(feature_matrix, labels, T):
     the feature matrix.
     """
     # Your code here
+    theta = np.zeros(feature_matrix.shape[1],)
+    theta_0 = 0
     for t in range(T):
         for i in get_order(feature_matrix.shape[0]):
             # Your code here
+            theta, theta_0 = perceptron_single_step_update(feature_matrix[i], labels[i], theta, theta_0)
             pass
+    return theta, theta_0
     raise NotImplementedError
 
 
@@ -148,6 +161,21 @@ def average_perceptron(feature_matrix, labels, T):
     find a sum and divide.
     """
     # Your code here
+    n = feature_matrix.shape[1]
+    theta = np.zeros(n,)
+    theta_0 = 0
+    sum_theta = np.zeros(n,)
+    sum_theta_0 = 0
+    for t in range(T):
+        for i in get_order(feature_matrix.shape[0]):
+            # Your code here
+            theta, theta_0 = perceptron_single_step_update(feature_matrix[i], labels[i], theta, theta_0)
+            sum_theta = sum_theta + theta
+            sum_theta_0 = sum_theta_0 + theta_0
+            pass
+    average_theta = sum_theta/(n*T)
+    average_theta_0 = sum_theta_0/(n*T)
+    return average_theta, average_theta_0
     raise NotImplementedError
 
 
@@ -177,7 +205,11 @@ def pegasos_single_step_update(
     real valued number with the value of theta_0 after the current updated has
     completed.
     """
-    # Your code here
+    mult = 1 - (eta * L)
+    if label * (np.dot(feature_vector, current_theta) + current_theta_0) <= 1:
+        return ((mult * current_theta) + (eta * label * feature_vector),
+                (current_theta_0) + (eta * label))
+    return (mult * current_theta, current_theta_0)
     raise NotImplementedError
 
 
@@ -210,7 +242,17 @@ def pegasos(feature_matrix, labels, T, L):
     number with the value of the theta_0, the offset classification
     parameter, found after T iterations through the feature matrix.
     """
-    # Your code here
+    (nsamples, nfeatures) = feature_matrix.shape
+    theta = np.zeros(nfeatures)
+    theta_0 = 0
+    count = 0
+    for t in range(T):
+        for i in get_order(nsamples):
+            count += 1
+            eta = 1.0 / np.sqrt(count)
+            (theta, theta_0) = pegasos_single_step_update(
+                feature_matrix[i], labels[i], L, eta, theta, theta_0)
+    return (theta, theta_0)
     raise NotImplementedError
 
 # Part II
@@ -233,7 +275,18 @@ def classify(feature_matrix, theta, theta_0):
     given theta and theta_0. If a prediction is GREATER THAN zero, it should
     be considered a positive classification.
     """
-    # Your code here
+    (nsamples, nfeatures) = feature_matrix.shape
+    predictions = np.zeros(nsamples)
+    for i in range(nsamples):
+        feature_vector = feature_matrix[i]
+        prediction = np.dot(theta, feature_vector) + theta_0
+        if (prediction > 0):
+            predictions[i] = 1
+        else:
+            predictions[i] = -1
+    return predictions
+    # Another option: 
+    # return (feature_matrix @ theta + theta_0 > 1e-7) * 2.0 - 1  
     raise NotImplementedError
 
 
@@ -269,7 +322,12 @@ def classifier_accuracy(
     trained classifier on the training data and the second element is the
     accuracy of the trained classifier on the validation data.
     """
-    # Your code here
+    theta, theta_0 = classifier(train_feature_matrix, train_labels, **kwargs)
+    train_predictions = classify(train_feature_matrix, theta, theta_0)
+    val_predictions = classify(val_feature_matrix, theta, theta_0)
+    train_accuracy = accuracy(train_predictions, train_labels)
+    validation_accuracy = accuracy(val_predictions, val_labels)
+    return (train_accuracy, validation_accuracy)
     raise NotImplementedError
 
 
