@@ -134,7 +134,8 @@ def run_softmax_on_MNIST_mod3(temp_parameter=1):
 
     See run_softmax_on_MNIST for more info.
     """
-    # YOUR CODE HERE
+    updated_y = update_y(train_y, test_y)
+    return compute_test_error_mod3(train_x, updated_y, )
     raise NotImplementedError
 
 

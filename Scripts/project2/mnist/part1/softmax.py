@@ -31,7 +31,13 @@ def compute_probabilities(X, theta, temp_parameter):
     Returns:
         H - (k, n) NumPy array, where each entry H[j][i] is the probability that X[i] is labeled as j
     """
-    #YOUR CODE HERE
+    itemp = 1 / temp_parameter
+    dot_products = itemp * theta.dot(X.T)
+    max_of_columns = dot_products.max(axis=0)
+    shifted_dot_products = dot_products - max_of_columns
+    exponentiated = np.exp(shifted_dot_products)
+    col_sums = exponentiated.sum(axis=0)
+    return exponentiated / col_sums
     raise NotImplementedError
 
 def compute_cost_function(X, Y, theta, lambda_factor, temp_parameter):
@@ -50,7 +56,14 @@ def compute_cost_function(X, Y, theta, lambda_factor, temp_parameter):
     Returns
         c - the cost value (scalar)
     """
-    #YOUR CODE HERE
+    N = X.shape[0]
+    probabilities = compute_probabilities(X, theta, temp_parameter)
+    selected_probabilities = np.choose(Y, probabilities)
+    non_regulizing_cost = np.sum(np.log(selected_probabilities))
+    non_regulizing_cost *= -1 / N
+    regulizing_cost = np.sum(np.square(theta))
+    regulizing_cost *= lambda_factor / 2.0
+    return non_regulizing_cost + regulizing_cost
     raise NotImplementedError
 
 def run_gradient_descent_iteration(X, Y, theta, alpha, lambda_factor, temp_parameter):
@@ -70,7 +83,15 @@ def run_gradient_descent_iteration(X, Y, theta, alpha, lambda_factor, temp_param
     Returns:
         theta - (k, d) NumPy array that is the final value of parameters theta
     """
-    #YOUR CODE HERE
+    itemp=1./temp_parameter
+    num_examples = X.shape[0]
+    num_labels = theta.shape[0]
+    probabilities = compute_probabilities(X, theta, temp_parameter)
+    # M[i][j] = 1 if y^(j) = i and 0 otherwise.
+    M = sparse.coo_matrix(([1]*num_examples, (Y,range(num_examples))), shape=(num_labels,num_examples)).toarray()
+    non_regularized_gradient = np.dot(M-probabilities, X)
+    non_regularized_gradient *= -itemp/num_examples
+    return theta - alpha * (non_regularized_gradient + lambda_factor * theta)
     raise NotImplementedError
 
 def update_y(train_y, test_y):
@@ -90,7 +111,7 @@ def update_y(train_y, test_y):
         test_y_mod3 - (n, ) NumPy array containing the new labels (a number between 0-2)
                     for each datapoint in the test set
     """
-    #YOUR CODE HERE
+    return np.remainder(train_y, 3), np.remainder(test_y, 3)
     raise NotImplementedError
 
 def compute_test_error_mod3(X, Y, theta, temp_parameter):
@@ -108,7 +129,8 @@ def compute_test_error_mod3(X, Y, theta, temp_parameter):
     Returns:
         test_error - the error rate of the classifier (scalar)
     """
-    #YOUR CODE HERE
+    assigned_labels = get_classification(X, theta, temp_parameter)
+    return 1 - np.mean(np.remainder(assigned_labels,3) == Y)
     raise NotImplementedError
 
 def softmax_regression(X, Y, temp_parameter, alpha, lambda_factor, k, num_iterations):
