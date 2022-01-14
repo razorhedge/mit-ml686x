@@ -122,7 +122,7 @@ def step_game(current_room_desc, current_quest_desc, action_index, object_index)
     current_room_index = rooms_desc_map[current_room_desc]
     quest_index = quests_map[current_quest_desc]
 
-    if (command_is_valid[current_room_index, action_index, object_index]==1):
+    if (command_is_valid[current_room_index, action_index, object_index].any()==1):
         # quest has been finished
         if ((actions[action_index]==quest_actions[quest_index]) and (objects[object_index]==quest_objects[quest_index])):
             terminal = True
