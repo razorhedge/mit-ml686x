@@ -34,15 +34,15 @@ def epsilon_greedy(state_1, state_2, q_func, epsilon):
     Returns:
         (int, int): the indices describing the action/object to take
     """
-    # TODO Your code here  
+    # TODO Your code here
+    action_index, object_index = None, None  
     prob = np.random.random()
     if prob < epsilon:
         rand_act = np.random.randint(NUM_ACTIONS)
         rand_obj = np.random.randint(NUM_OBJECTS)
         action_index, object_index = rand_act, rand_obj
     else:
-        max_index = np.where(q_func[state_1,state_2]==np.amax(q_func[state_1,state_2]))
-        print(max_index)
+        max_index = np.unravel_index(np.argmax(q_func, axis=None), q_func.shape)
         action_index = max_index[0]
         object_index = max_index[1]
     return (action_index, object_index)

@@ -47,6 +47,14 @@ def epsilon_greedy(state_vector, theta, epsilon):
     """
     # TODO Your code here
     action_index, object_index = None, None
+    prob = np.random.random()
+    if prob < epsilon:
+        rand_act = np.random.randint(NUM_ACTIONS)
+        rand_obj = np.random.randint(NUM_OBJECTS)
+        action_index, object_index = rand_act, rand_obj
+    else:
+        max_index = np.where(np.dot(theta, state_vector)==np.max(np.dot(theta,state_vector)))
+        (action_index, object_index) = index2tuple(max_index[0][0])
     return (action_index, object_index)
 # pragma: coderesponse end
 
@@ -69,7 +77,11 @@ def linear_q_learning(theta, current_state_vector, action_index, object_index,
         None
     """
     # TODO Your code here
-    theta = None # TODO Your update here
+    q_value_cs = (theta @ current_state_vector)[tuple2index(action_index, object_index)]
+    q_value_ns = (theta @ next_state_vector)
+    y = reward + GAMMA*np.max(q_value_ns)*(1-terminal)
+    theta[tuple2index(action_index, object_index)] += ALPHA*(y - q_value_cs)*current_state_vector # TODO Your update here
+    return None
 # pragma: coderesponse end
 
 

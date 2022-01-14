@@ -41,8 +41,12 @@ def epsilon_greedy(state_vector, epsilon):
         (int, int): the indices describing the action/object to take
     """
     # TODO Your code here
-    action_index, object_index = None, None
-    return (action_index, object_index)
+    explore = (np.random.randint(NUM_ACTIONS), np.random.randint(NUM_OBJECTS))
+    act_arr, obj_arr = model(state_vector)
+    exploit = torch.argmax(act_arr), torch.argmax(obj_arr)
+
+    return ([exploit, explore][np.random.binomial(1, epsilon)])
+    #return (action_index, object_index)
 
 class DQN(nn.Module):
     """A simple deep Q network implementation.
@@ -84,8 +88,16 @@ def deep_q_learning(current_state_vector, action_index, object_index, reward,
     q_value_cur_state = model(current_state_vector)
 
     # TODO Your code here
+    # Current value of Q function
+    q_value_cur = 0.5 * (q_value_cur_state[0][action_index] + \
+                         q_value_cur_state[1][object_index])
 
-    loss = None
+    # Obtaining maximum value of Q and value of y
+    max_Q = [maxq_next, 0][terminal]
+    val_y = reward + GAMMA*max_Q
+
+    # Loss function
+    loss = 0.5 * (val_y - q_value_cur)**2
 
     optimizer.zero_grad()
     loss.backward()
