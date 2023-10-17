@@ -161,10 +161,11 @@ def average_perceptron(feature_matrix, labels, T):
     find a sum and divide.
     """
     # Your code here
-    n = feature_matrix.shape[1]
-    theta = np.zeros(n,)
+    n = feature_matrix.shape[0]
+    d = feature_matrix.shape[1]
+    theta = np.zeros(d,)
     theta_0 = 0
-    sum_theta = np.zeros(n,)
+    sum_theta = np.zeros(d,)
     sum_theta_0 = 0
     for t in range(T):
         for i in get_order(feature_matrix.shape[0]):
@@ -352,11 +353,13 @@ def bag_of_words(texts):
     Feel free to change this code as guided by Problem 9
     """
     # Your code here
+    with open('stopwords.txt', 'r') as sw:
+        stopwords = sw.read().splitlines()
     dictionary = {} # maps word to unique index
     for text in texts:
         word_list = extract_words(text)
         for word in word_list:
-            if word not in dictionary:
+            if word not in dictionary and word not in stopwords:
                 dictionary[word] = len(dictionary)
     return dictionary
 
